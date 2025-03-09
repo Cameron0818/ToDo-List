@@ -1,18 +1,36 @@
-## Getting Started
+# Todo List with Calendar Application
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+A Java Swing-based application that combines a calendar view with a todo list manager. Organize your tasks by day with persistent storage and an intuitive GUI.
 
-## Folder Structure
+![image](https://github.com/user-attachments/assets/3f3a2643-9fc1-41a4-8089-ee6057989515)
 
-The workspace contains two folders by default, where:
+## Features
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+- **Calendar Navigation**:
+  - View monthly calendar with week-based layout
+  - Navigate months with previous/next buttons
+  - Click any date to jump to that week
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+- **Weekly Task Management**:
+  - 7-tab interface showing Monday-Sunday week view
+  - Add tasks to specific days
+  - Delete single or multiple tasks
+  - Tasks automatically saved to date-based files
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+- **Persistence**:
+  - Automatic task saving when window closes
+  - Individual .txt files for each date (YYYY-MM-DD.txt format)
+  - Tasks preserved between application sessions
 
-## Dependency Management
+- **User-Friendly Interface**:
+  - Color-coded action buttons (green add/red delete)
+  - Dark-themed task lists
+  - Keyboard shortcuts (Enter to add, Delete/Backspace to remove)
+  - Responsive calendar highlighting current month days
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+## Soon to be Implemented:
+  - Saving all tasks to a .json file instead of individual text files for each day
+  - Sending reminders to a Discord acount using Discord's api
+
+### Requirements
+- Java Runtime Environment (JRE) 8 or later

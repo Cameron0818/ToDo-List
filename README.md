@@ -1,23 +1,16 @@
-## Getting Started
+TodoListApp is a simple desktop application built with Java Swing that combines a calendar view with a task manager. It helps you organize your week by letting you add, view, and delete tasks for specific dates.
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+**Features**
+  
+  Calendar Navigation: Browse months and weeks with a simple interface.
+  
+  Weekly Task View: Each day of the week has its own tab for tasks.
+  
+  Add/Delete Tasks: Quickly add tasks via input or remove selected tasks.
+  
+  Persistent Storage: Tasks are saved automatically in tasks.jsonl so nothing is lost between sessions.
+  
+  Keyboard Shortcuts: Delete tasks using Delete or Backspace keys.
 
-## Folder Structure
+<img width="1065" height="738" alt="image" src="https://github.com/user-attachments/assets/5414d399-98ae-4d39-af1e-1af1eea285fe" />
 
-The workspace contains two folders by default, where:
-
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
-
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
-
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
-
-Running it:
-
-# Run using the out/ directory as classpath
-java -cp out TodoListApp

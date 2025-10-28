@@ -1,6 +1,9 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.*;
 import java.time.format.*;
 import java.time.temporal.*;
@@ -9,12 +12,12 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 /**
- * TodoListApp - A Swing-based application combining a calendar view with task management features.
- * Allows users to:
- * - Navigate months and weeks
- * - Add/delete tasks for specific dates
- * - Persist tasks to date-based text files
- */
+TodoListApp - A Swing-based application combining a calendar view with task management features.
+Allows users to:
+ - Navigate months and weeks
+ - Add/delete tasks for specific dates
+ - Persist tasks to date-based text files
+*/
 public class TodoListApp extends JFrame {
     // Maps dates to their respective task list models (cached for performance)
     private final Map<LocalDate, DefaultListModel<String>> dateModels = new HashMap<>();
@@ -29,9 +32,9 @@ public class TodoListApp extends JFrame {
     private JTabbedPane tabbedPane;      // Displays week days with task lists
     private JTextField taskInput;        // Input field for new tasks
 
-    /**
-     * Constructor initializes application state and UI
-     */
+    
+    // Constructor initializes application state and UI
+    
     public TodoListApp() {
         // Initialize calendar states to current date
         currentWeekStart = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
@@ -42,9 +45,9 @@ public class TodoListApp extends JFrame {
         updateTabsForWeek(currentWeekStart);  // Load initial week view
     }
 
-    /**
-     * Configures main window properties
-     */
+    /*
+    Configures main window properties
+    */
     private void setupFrame() {
         setTitle("Todo List with Calendar");
         setSize(870, 600);
@@ -54,9 +57,9 @@ public class TodoListApp extends JFrame {
         getContentPane().setBackground(Color.WHITE);
     }
 
-    /**
-     * Builds calendar panel with month navigation and day grid
-     */
+    /*
+    Builds calendar panel with month navigation and day grid
+    */
     private void setupCalendarPanel() {
         calendarPanel = new JPanel(new BorderLayout());
         
@@ -90,9 +93,9 @@ public class TodoListApp extends JFrame {
         add(calendarPanel, BorderLayout.NORTH);
     }
 
-    /**
-     * Updates calendar display for current month
-     */
+    
+    //Updates calendar display for current month
+
     private void updateCalendar() {
         // Update month/year header
         monthLabel.setText(currentMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.getDefault()) 
@@ -129,38 +132,36 @@ public class TodoListApp extends JFrame {
         daysPanel.repaint();
     }
 
-    /**
-     * Handles date selection from calendar
-     * @param date Selected date
-     */
+    
+    // Handles date selection from calendar
+
     private void selectDate(LocalDate date) {
         // Adjust week view to contain selected date
         currentWeekStart = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         updateTabsForWeek(currentWeekStart);
     }
 
-    /**
-     * Updates week view tabs with tasks for each day
-     * @param startOfWeek Starting Monday of the week to display
-     */
+    
+    // Updates week view tabs with tasks for each day
+
     private void updateTabsForWeek(LocalDate startOfWeek) {
         tabbedPane.removeAll();  // Clear previous tabs
 
         // Create tab for each day in week
         for (int i = 0; i < 7; i++) {
             final LocalDate date = startOfWeek.plusDays(i);
-            // Format tab title (e.g., "Monday (Jan 1)")
+            // Format tab title
             String dayName = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
             String tabTitle = String.format("%s (%s)", dayName, date.format(DateTimeFormatter.ofPattern("MMM d")));
 
-            // Get or create task list model for date
+            // Get/create task list model for date
             DefaultListModel<String> model = dateModels.computeIfAbsent(date, k -> {
                 DefaultListModel<String> m = new DefaultListModel<>();
                 loadTasksForDate(date, m);  // Load from file if exists
                 return m;
             });
 
-            // Create task list with dark theme
+            // Create task list
             JList<String> list = new JList<>(model);
             list.setBackground(Color.BLACK);
             list.setForeground(Color.WHITE);
@@ -182,30 +183,42 @@ public class TodoListApp extends JFrame {
         tabbedPane.repaint();
     }
 
-    /**
-     * Loads tasks from date-based text file
-     * @param date Date to load tasks for
-     * @param model List model to populate with tasks
-     */
+    /*
+    Loads tasks for a specific date from a JSON lines file (tasks.jsonl).
+    Each line is a JSON object: {"date": "YYYY-MM-DD", "tasks": ["task1", "task2"]}
+    */
     private void loadTasksForDate(LocalDate date, DefaultListModel<String> model) {
-        String fileName = date.format(DateTimeFormatter.ISO_LOCAL_DATE) + ".txt";
-        File taskFile = new File(fileName);
+        Path srcPath = Paths.get(System.getProperty("user.dir"), "src");
+        File file = srcPath.resolve("tasks.jsonl").toFile();
+        if (!file.exists()) return;
 
-        if (taskFile.exists()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(taskFile))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    model.addElement(line);
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("\"" + date.toString() + "\"")) {
+                    int start = line.indexOf("[");
+                    int end = line.indexOf("]");
+                    if (start != -1 && end != -1) {
+                        String[] tasks = line.substring(start + 1, end)
+                                .replace("\"", "")
+                                .split(",");
+                        for (String t : tasks) {
+                            if (!t.trim().isEmpty()) {
+                                model.addElement(t.trim());
+                            }
+                        }
+                    }
+                    break;
                 }
-            } catch (IOException e) {
-                // Silent handling for missing files
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Initializes main UI components
-     */
+    
+    //Initializes main UI components
+    
     private void setupComponents() {
         setupCalendarPanel();
 
@@ -241,7 +254,6 @@ public class TodoListApp extends JFrame {
         add(tabbedPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // Event handlers
         addButton.addActionListener(e -> addTask());
         deleteButton.addActionListener(e -> deleteTasks());
         taskInput.addActionListener(e -> addTask());
@@ -255,13 +267,15 @@ public class TodoListApp extends JFrame {
         });
     }
 
-    /**
-     * Adds new task to current day's list
-     */
+    
+    // Adds new task to current day's list
+    
     private void addTask() {
         String task = taskInput.getText().trim();
-        if (task.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Task cannot be empty", "Error", JOptionPane.ERROR_MESSAGE);
+
+        // Prevent commas because they create new Lines when loading tasks from the JSON file
+        if (task.contains(",")) {
+            JOptionPane.showMessageDialog(this, "Task cannot contain commas", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -271,51 +285,84 @@ public class TodoListApp extends JFrame {
         DefaultListModel<String> model = dateModels.get(date);
         
         model.addElement(task);
-        taskInput.setText("");  // Clear input
+        taskInput.setText(""); 
     }
 
-    /**
-     * Deletes selected tasks from current day's list
-     */
-    @SuppressWarnings("unchecked")
+    
+    // Deletes selected tasks from current day's list
+
     private void deleteTasks() {
         int selectedTab = tabbedPane.getSelectedIndex();
+        if (selectedTab == -1) return; // No tab selected
+
         LocalDate date = currentWeekStart.plusDays(selectedTab);
         DefaultListModel<String> model = dateModels.get(date);
-        
-        // Get selected items from UI component
-        JList<String> list = (JList<String>) ((JScrollPane) tabbedPane.getComponentAt(selectedTab)).getViewport().getView();
+        if (model == null || model.isEmpty()) return;
+
+        JScrollPane scrollPane = (JScrollPane) tabbedPane.getComponentAt(selectedTab);
+        JList<String> list = (JList<String>) scrollPane.getViewport().getView();
+
         int[] selectedIndices = list.getSelectedIndices();
+        if (selectedIndices.length == 0) {
+            return;
+        }
 
-        // Remove from highest index first to prevent shifting
+        // Remove selected tasks in reverse order
         for (int i = selectedIndices.length - 1; i >= 0; i--) {
-            model.remove(selectedIndices[i]);
+            model.removeElementAt(selectedIndices[i]);
         }
+
+        // Persist changes immediately
+        saveTasks();
     }
 
     /**
-     * Persists all tasks to date-based text files
-     */
+    Saves all tasks into a JSON lines file.
+    Each line contains one day's date and its list of tasks.
+    */
     private void saveTasks() {
-        for (Map.Entry<LocalDate, DefaultListModel<String>> entry : dateModels.entrySet()) {
-            LocalDate date = entry.getKey();
-            DefaultListModel<String> model = entry.getValue();
-            String fileName = date.format(DateTimeFormatter.ISO_LOCAL_DATE) + ".txt";
+        
+        Path srcPath = Paths.get(System.getProperty("user.dir"), "src");
 
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+        // Make sure src exists
+        try {
+            Files.createDirectories(srcPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        File file = srcPath.resolve("tasks.jsonl").toFile();
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (Map.Entry<LocalDate, DefaultListModel<String>> entry : dateModels.entrySet()) {
+                LocalDate date = entry.getKey();
+                DefaultListModel<String> model = entry.getValue();
+
+                // Build JSON line
+                StringBuilder jsonLine = new StringBuilder();
+                jsonLine.append("{\"date\": \"").append(date).append("\", \"tasks\": [");
+
                 for (int i = 0; i < model.size(); i++) {
-                    writer.write(model.getElementAt(i));
-                    writer.newLine();
+                    jsonLine.append("\"").append(escapeJson(model.get(i))).append("\"");
+                    if (i < model.size() - 1) jsonLine.append(", ");
                 }
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error saving tasks for " + date, "Error", JOptionPane.ERROR_MESSAGE);
+
+                jsonLine.append("]}");
+                writer.write(jsonLine.toString());
+                writer.newLine();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Entry point: Launches application
-     */
+    // Escapes quotes in JSON strings.
+
+    private static String escapeJson(String text) {
+        return text.replace("\"", "\\\"");
+    }
+
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             TodoListApp app = new TodoListApp();
